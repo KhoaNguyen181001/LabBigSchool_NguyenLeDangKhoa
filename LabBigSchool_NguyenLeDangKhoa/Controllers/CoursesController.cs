@@ -19,15 +19,9 @@ namespace LabBigSchool_NguyenLeDangKhoa.Controllers
             _dbContext = new ApplicationDbContext();
         }
 
-        public object LecturerID { get; private set; }
-        public DateTime DateTime { get; private set; }
-        public byte CategoryId { get; private set; }
-        public string Place { get; private set; }
-
         [Authorize]
         public ActionResult Create()
         {
-           
             {
                 var viewModel = new CourseViewModel
                 {
@@ -38,23 +32,27 @@ namespace LabBigSchool_NguyenLeDangKhoa.Controllers
         }
         [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Create(CourseViewModel viewModel)
         {
-            var course = new Course();
+            if (!ModelState.IsValid)
             {
-                LecturerID = User.Identity.GetUserId();
-                DateTime = viewModel.GetDateTime();
-                CategoryId = viewModel.Category;
-                Place = viewModel.Place;
+                viewModel.Categories = _dbContext.Categories.ToList();
+                return View("Create", viewModel);
+
+            }
+            var course = new Course
+            {
+                LecturerId = User.Identity.GetUserId(),
+                DateTime = viewModel.GetDateTime(),
+                CategoryID = viewModel.Category,
+                Place = viewModel.Place
             };
             _dbContext.Courses.Add(course);
             _dbContext.SaveChanges();
-            return RedirectToAcTion("Index", "Home");
+            return RedirectToAction("Index", "Home");
         }
-
-        private ActionResult RedirectToAcTion(string v1, string v2)
-        {
-            throw new NotImplementedException();
-        }
+  
     }
 }
+
